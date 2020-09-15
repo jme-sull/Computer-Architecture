@@ -9,6 +9,7 @@ class CPU:
     LDI = 0b10000010
     PRN = 0b01000111
     HLT = 0b00000001
+    MLT = 0b10100010
 
     def __init__(self):
         """Construct a new CPU."""
@@ -17,6 +18,11 @@ class CPU:
         self.pc = 0 #the program counter, aka address of the currently excuting instruction 
         self.running = True
 
+        self.bt = {
+            "MUL": self.op_mul
+
+        }
+
     def ram_read(self, MAR): #MAR contains the address that is being read or written to
         return self.ram[MAR]
 
@@ -24,36 +30,31 @@ class CPU:
         self.ram[MAR] = MDR 
     
     
-    def load(self):
+    def load(self, filename):
         """Load a program into memory."""
         address = 0 
+        with open(filename) as fp:
+            for line in fp:
+                comment_split = line.split('#')
+                num = comment_split[0].strip()
+                if num == '':
+                    continue
+                val = int(num, 2)
+                self.ram[address] = val
+                address += 1
 
-        # For now, we've just hardcoded a program:
-
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ] 
     
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
-
-
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
-
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
+        elif op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
         #elif op == "SUB": etc
         else:
             raise Exception("Unsupported ALU operation")
 
+    
     def trace(self):
         """
         Handy function to print out the CPU state. You might want to call this
@@ -83,22 +84,45 @@ class CPU:
             operand_a = self.ram[self.pc + 1]
             operand_b = self.ram[self.pc + 2] #instruction register, copy of currently excuting instruction
 
-            if ir == self.LDI: 
-                self.reg[operand_a] = operand_b
-                self.pc += 3
 
-            elif ir == self.PRN: 
-                print(self.reg[operand_a])
-                self.pc += 2
-            
-            elif ir == self.HLT:
-                self.running = False
+            inst_size = ((ir >> 6) & 0b11) + 1
+            self.inst_set_pc = ((ir >> 4) & 0b1) == 1
 
+            if ir in self.bt:
+                self.bt[ir](operand_a, operand_b)
             else:
-                print(f'Unknown instruction')
+                raise Exception(f"Invalid instruction")
+
+            if not self.inst_set_pc:
+                self.pc += inst_size
+
+
+
+            # if ir == self.LDI: 
+            #     self.reg[operand_a] = operand_b
+            #     self.pc += 3
+
+            # elif ir == self.PRN: 
+            #     print(self.reg[operand_a])
+            #     self.pc += 2
+
+            # elif ir == self.MLT:
+            #     self.reg[operand_a] = operand_a * operand_b
+            
+            # elif ir == self.HLT:
+            #     self.running = False
+
+            # else:
+            #     print(f'Unknown instruction')
 
             # offset = ir >> 6
             # self.pc += offset + 1
+
+    def op_mul(self, operand_a, operand_b):
+        self.alu("MUL", operand_a, operand_b)
+
+    def op_prn(self, operand_a):
+        
 
             
 
