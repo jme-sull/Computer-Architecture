@@ -2,14 +2,20 @@
 
 import sys
 
+
 class CPU:
     """Main CPU class."""
 
+    LDI = 0b10000010
+    PRN = 0b01000111
+    HLT = 0b00000001
+
     def __init__(self):
         """Construct a new CPU."""
-        self.ram = [0] * 256 #the ls has 8 bit addressing
-        self.reg = [0] * 8 #the register 
+        self.ram = [0] * 256 #the ls has 8 bit addressing(index)
+        self.reg = [0] * 8 #the register, R0-R7
         self.pc = 0 #the program counter, aka address of the currently excuting instruction 
+        self.running = True
 
     def ram_read(self, MAR): #MAR contains the address that is being read or written to
         return self.ram[MAR]
@@ -18,13 +24,12 @@ class CPU:
         self.ram[MAR] = MDR 
     
     
-    def load(self, program):
+    def load(self):
         """Load a program into memory."""
-
-       """  address = 0 """
+        address = 0 
 
         # For now, we've just hardcoded a program:
-""" 
+
         program = [
             # From print8.ls8
             0b10000010, # LDI R0,8
@@ -33,8 +38,8 @@ class CPU:
             0b01000111, # PRN R0
             0b00000000,
             0b00000001, # HLT
-        ] """
-
+        ] 
+    
         for instruction in program:
             self.ram[address] = instruction
             address += 1
@@ -71,4 +76,32 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+
+        while self.running:
+    
+            ir = self.ram[self.pc]
+            operand_a = self.ram[self.pc + 1]
+            operand_b = self.ram[self.pc + 2] #instruction register, copy of currently excuting instruction
+
+            if ir == self.LDI: 
+                self.reg[operand_a] = operand_b
+                self.pc += 3
+
+            elif ir == self.PRN: 
+                print(self.reg[operand_a])
+                self.pc += 2
+            
+            elif ir == self.HLT:
+                self.running = False
+
+            else:
+                print(f'Unknown instruction')
+
+            # offset = ir >> 6
+            # self.pc += offset + 1
+
+            
+
+
+        
+
