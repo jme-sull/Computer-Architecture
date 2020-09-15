@@ -7,15 +7,24 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
-        pass
+        self.ram = [0] * 256 #the ls has 8 bit addressing
+        self.reg = [0] * 8 #the register 
+        self.pc = 0 #the program counter, aka address of the currently excuting instruction 
 
-    def load(self):
+    def ram_read(self, MAR): #MAR contains the address that is being read or written to
+        return self.ram[MAR]
+
+    def ram_write(self, MDR, MAR): #contains the data that was read or the data to write
+        self.ram[MAR] = MDR 
+    
+    
+    def load(self, program):
         """Load a program into memory."""
 
-        address = 0
+       """  address = 0 """
 
         # For now, we've just hardcoded a program:
-
+""" 
         program = [
             # From print8.ls8
             0b10000010, # LDI R0,8
@@ -24,7 +33,7 @@ class CPU:
             0b01000111, # PRN R0
             0b00000000,
             0b00000001, # HLT
-        ]
+        ] """
 
         for instruction in program:
             self.ram[address] = instruction
