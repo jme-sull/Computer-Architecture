@@ -18,11 +18,6 @@ class CPU:
         self.pc = 0 #the program counter, aka address of the currently excuting instruction 
         self.running = True
 
-        self.bt = {
-            "MUL": self.op_mul
-
-        }
-
     def ram_read(self, MAR): #MAR contains the address that is being read or written to
         return self.ram[MAR]
 
@@ -43,7 +38,6 @@ class CPU:
                 self.ram[address] = val
                 address += 1
 
-    
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
         if op == "ADD":
@@ -79,53 +73,40 @@ class CPU:
         """Run the CPU."""
 
         while self.running:
-    
+           
             ir = self.ram[self.pc]
             operand_a = self.ram[self.pc + 1]
             operand_b = self.ram[self.pc + 2] #instruction register, copy of currently excuting instruction
 
 
-            inst_size = ((ir >> 6) & 0b11) + 1
-            self.inst_set_pc = ((ir >> 4) & 0b1) == 1
+            # inst_size = ((ir >> 6) & 0b11) + 1
+            # self.inst_set_pc = ((ir >> 4) & 0b1) == 1
 
-            if ir in self.bt:
-                self.bt[ir](operand_a, operand_b)
-            else:
-                raise Exception(f"Invalid instruction")
-
-            if not self.inst_set_pc:
-                self.pc += inst_size
-
-
-
-            # if ir == self.LDI: 
-            #     self.reg[operand_a] = operand_b
-            #     self.pc += 3
-
-            # elif ir == self.PRN: 
-            #     print(self.reg[operand_a])
-            #     self.pc += 2
-
-            # elif ir == self.MLT:
-            #     self.reg[operand_a] = operand_a * operand_b
-            
-            # elif ir == self.HLT:
-            #     self.running = False
-
+            # if ir in self.bt:
+            #     self.bt[ir](operand_a, operand_b)
             # else:
-            #     print(f'Unknown instruction')
+            #     raise Exception(f"Invalid instruction")
+
+            # if not self.inst_set_pc:
+            #     self.pc += inst_size
+
+            if ir == self.LDI: 
+                self.reg[operand_a] = operand_b
+                self.pc += 3
+
+            elif ir == self.PRN: 
+                print(self.reg[operand_a])
+                self.pc += 2
+
+            elif ir == self.MLT:
+                self.reg[operand_a] *= self.reg[operand_b]
+                self.pc += 3
+            
+            elif ir == self.HLT:
+                self.running = False
+
+            else:
+                print(f'Unknown instruction')
 
             # offset = ir >> 6
             # self.pc += offset + 1
-
-    def op_mul(self, operand_a, operand_b):
-        self.alu("MUL", operand_a, operand_b)
-
-    def op_prn(self, operand_a):
-        
-
-            
-
-
-        
-
