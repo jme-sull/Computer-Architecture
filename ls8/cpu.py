@@ -10,19 +10,25 @@ class CPU:
     PRN = 0b01000111
     HLT = 0b00000001
     MLT = 0b10100010
+    PUSH = 0b01000101
+    POP = 0b01000110
+    NOP = 0b00000000
+
 
     def __init__(self):
         """Construct a new CPU."""
         self.ram = [0] * 256 #the ls has 8 bit addressing(index)
-        self.reg = [0] * 8 #the register, R0-R7
+        self.reg = [0] * 8
         self.pc = 0 #the program counter, aka address of the currently excuting instruction 
         self.running = True
+        self.sp = 7
+        self.reg[self.sp] = 0xF4 
 
     def ram_read(self, MAR): #MAR contains the address that is being read or written to
         return self.ram[MAR]
 
     def ram_write(self, MDR, MAR): #contains the data that was read or the data to write
-        self.ram[MAR] = MDR 
+        self.ram[MDR] = MAR
     
     
     def load(self, filename):
@@ -78,23 +84,11 @@ class CPU:
             operand_a = self.ram[self.pc + 1]
             operand_b = self.ram[self.pc + 2] #instruction register, copy of currently excuting instruction
 
-
-            # inst_size = ((ir >> 6) & 0b11) + 1
-            # self.inst_set_pc = ((ir >> 4) & 0b1) == 1
-
-            # if ir in self.bt:
-            #     self.bt[ir](operand_a, operand_b)
-            # else:
-            #     raise Exception(f"Invalid instruction")
-
-            # if not self.inst_set_pc:
-            #     self.pc += inst_size
-
             if ir == self.LDI: 
                 self.reg[operand_a] = operand_b
                 self.pc += 3
 
-            elif ir == self.PRN: 
+            elif ir == self.PRN:
                 print(self.reg[operand_a])
                 self.pc += 2
 
@@ -105,8 +99,59 @@ class CPU:
             elif ir == self.HLT:
                 self.running = False
 
+            elif ir == self.PUSH:
+
+                #Decrement SP
+                self.reg[self.sp] -=1
+                # self.reg[self.sp] &= 0xFF
+
+                #get the reg num to push
+                reg_num = operand_a
+
+                #get the value to push
+                value = self.reg[operand_a]
+                
+
+
+                #copy the value to the SP address
+                top_of_stack_address = self.reg[self.sp]
+                self.ram_write(top_of_stack_address, value)
+               
+        
+
+                self.pc += 2 
+
+            
+            elif ir == self.POP:
+
+                #get reg to pop into
+                reg_num = operand_a
+
+                #get the top of stack addr
+                top_of_stack_address = self.reg[self.sp]
+
+                #get the value at the top of the stack
+                value = self.ram[top_of_stack_address]
+
+                #store the value in the register 
+                self.reg[reg_num] = value
+            
+                
+
+
+                #increment the SP
+                self.reg[self.sp] += 1 
+                self.pc += 2
+
+            elif ir == self.NOP:
+                continue
+
             else:
                 print(f'Unknown instruction')
 
+            #print("REG", self.reg)
+            #print("RAM", self.ram)
+
             # offset = ir >> 6
             # self.pc += offset + 1
+
