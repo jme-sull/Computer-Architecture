@@ -60,12 +60,23 @@ but you'll have to implement those three above instructions first!
 ## Step 0: IMPORTANT: inventory what is here!
 
 * Make a list of files here.
+call.ls8 - instructions
+interrupts.ls8 - 
+keyboard.ls8
+mult.ls8
+print8.ls8
+printstr.ls8
+sctest.ls8
+stack.ls8
+stackoverflow.ls8
+cpu.py
+ls8.py
 * Write a short 3-10-word description of what each file does.
 * Note what has been implemented, and what hasn't.
 * Read this whole file.
 * Skim the spec.
 
-## Step 1: Add the constructor to `cpu.py`
+## Step 1: Add the constructor to `cpu.py` -done
 
 Add list properties to the `CPU` class to hold 256 bytes of memory and 8
 general-purpose registers.
@@ -81,7 +92,7 @@ Also add properties for any internal registers you need, e.g. `PC`.
 Later on, you might do further initialization here, e.g. setting the initial
 value of the stack pointer.
 
-## Step 2: Add RAM functions
+## Step 2: Add RAM functions - done 
 
 In `CPU`, add method `ram_read()` and `ram_write()` that access the RAM inside
 the `CPU` object.
@@ -153,6 +164,8 @@ the LS-8 spec.
 
 *At this point, you should be able to run the program and have it print `8` to
 the console!*
+
+-----DAY ONE END HERE 
 
 ## Step 7: Un-hardcode the machine code
 
