@@ -13,6 +13,10 @@ class CPU:
     PUSH = 0b01000101
     POP = 0b01000110
     NOP = 0b00000000
+    CMP = 0b10100111
+    CALL = 0b01010000
+    RET = 0b00010001
+    ADD = 0b10100000
 
 
     def __init__(self):
@@ -95,7 +99,11 @@ class CPU:
             elif ir == self.MLT:
                 self.reg[operand_a] *= self.reg[operand_b]
                 self.pc += 3
-            
+
+            elif ir == self.ADD:
+                self.reg[operand_a] += self.reg[operand_b]
+                self.pc += 3
+
             elif ir == self.HLT:
                 self.running = False
 
@@ -135,9 +143,7 @@ class CPU:
 
                 #store the value in the register 
                 self.reg[reg_num] = value
-            
-                
-
+        
 
                 #increment the SP
                 self.reg[self.sp] += 1 
@@ -146,8 +152,31 @@ class CPU:
             elif ir == self.NOP:
                 continue
 
+            elif ir == self.RET:
+                address_to_pop_from = self.reg[self.sp]
+                return_address = self.ram[address_to_pop_from]
+                self.reg[self.sp] += 1
+
+                self.pc = return_address
+
+            elif ir == self.CALL:
+                return_address = self.pc + 2
+                self.reg[self.sp] -= 1
+                address_to_push_to = self.reg[self.sp]
+                self.ram[address_to_push_to] = return_address
+
+                subroutine_address = self.reg[operand_a]
+
+                self.pc = subroutine_address
+
+            elif ir == self.CMP:
+                continue
+                #compare operand A and operand b
+                #if they are equal, set the Equal E flag to 1, otherwise set it to 0
+
             else:
-                print(f'Unknown instruction')
+                print(f'Unknown instruction at {self.pc}')
+                self.running = False
 
             #print("REG", self.reg)
             #print("RAM", self.ram)
