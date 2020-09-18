@@ -17,6 +17,9 @@ class CPU:
     CALL = 0b01010000
     RET = 0b00010001
     ADD = 0b10100000
+    JMP = 0b01010100
+    JEQ = 0b01010101
+    JNE = 0b01010110
 
 
     def __init__(self):
@@ -26,7 +29,9 @@ class CPU:
         self.pc = 0 #the program counter, aka address of the currently excuting instruction 
         self.running = True
         self.sp = 7
+        self.fl = [0] * 8 #E = self.fl[-1], G self.fl[-2], L self.fl[-3]
         self.reg[self.sp] = 0xF4 
+
 
     def ram_read(self, MAR): #MAR contains the address that is being read or written to
         return self.ram[MAR]
@@ -170,9 +175,50 @@ class CPU:
                 self.pc = subroutine_address
 
             elif ir == self.CMP:
-                continue
-                #compare operand A and operand b
+                 #compare operand A and operand b
+                if self.reg[operand_a] == self.reg[operand_b]:
+                    self.fl[-1] = 1
+                    self.pc += 3
+    
                 #if they are equal, set the Equal E flag to 1, otherwise set it to 0
+                else:
+                    self.fl[-1] = 0
+                    self.pc += 3
+                    
+            
+            elif ir == self.JMP:
+                #Jump to the address stored in the given register.
+            
+                #Set the PC to the address stored in the given register.
+                reg_num = self.ram[self.pc + 1]
+                value = self.reg[reg_num]
+
+                self.pc = value
+                
+
+            elif ir == self.JEQ:
+                # If equal flag is set (true), 
+                # jump to the address stored in the given register.
+                reg_num = self.ram[self.pc + 1]
+                value = self.reg[reg_num]
+
+                if self.fl[-1] == 1:
+                    self.pc = value
+                
+                else:
+                    self.pc += 2
+            
+            elif ir == self.JNE:
+                # If E flag is clear (false, 0), jump to the 
+                # address stored in the given register.
+                reg_num = self.ram[self.pc + 1]
+                value = self.reg[reg_num]
+
+                if self.fl[-1] == 0:
+                    self.pc = value
+                else:
+                    self.pc += 2
+                    
 
             else:
                 print(f'Unknown instruction at {self.pc}')
